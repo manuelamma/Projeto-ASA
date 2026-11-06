@@ -8,7 +8,7 @@ typedef struct
     Block *prev;
     int height;
     int rotation;
-
+    int n_blocks;
 } Placement;
 
 int main()
@@ -17,33 +17,37 @@ int main()
     std::cin >> n_blocks;
     std::vector<Block> blocks;
     blocks.reserve(n_blocks);
-    std::vector<Block> torre;
-    std::vector<Placement> dp;
-
     std::string s_x, s_y, s_z;
+
+    std::vector<Placement> dp(n_blocks);
+
     for (size_t i = 0; i < n_blocks; i++)
     {
-        std::cin >> s_x;
-        std::cin >> s_y;
-        std::cin >> s_z;
-        Block b(s_x, s_y, s_z);
-        if (i == 0)
-        {
-            dp[i] = {&b, b.get_z(), b.get_max_rotation()};
-        }
-        int max_height = -1;
-        int current_rotation = 0;
+        std::cin >> s_x >> s_y >> s_z;
+
+        blocks.emplace_back(s_x, s_y, s_z);
+        Block &b = blocks.back();
+
+        // A torre pode começar apenas com este bloco.
+        dp[i] = {nullptr, b.get_z(), b.get_max_rotation(), 1};
+
         for (size_t k = 0; k < i; k++)
         {
-            if (blocks[k].is_placable(b, &current_rotation) && dp[k].height > max_height)
+            int current_rotation = 0;
+
+            if (b.is_placable(blocks[k], &current_rotation))
             {
-                dp[i] = {
-                    &b, dp[k].height + b.get_z(), current_rotation};
-                max_height = dp[i].height + b.get_z();
+                int new_height = dp[k].height + b.get_z();
+
+                if (new_height > dp[i].height)
+                {
+                    dp[i] = {&blocks[k], new_height, current_rotation, dp[k].n_blocks + 1};
+                }
             }
         }
     }
-    Placement maior = *std::max_element(
+
+    auto max = std::max_element(
         dp.begin(),
         dp.end(),
         [](const Placement &a, const Placement &b)
@@ -51,7 +55,6 @@ int main()
             return a.height < b.height;
         });
 
-    std::cout << maior.height << '\n'; // 15
-
+    std::cout << max->height << " " << max->n_blocks << std::endl;
     return 0;
 }
