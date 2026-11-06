@@ -17,9 +17,11 @@ public:
 
     void rotate();
 
-    bool is_placable(const Block &b, int *rotation);
+    bool is_placable(const Block &b, int *rotation, int *new_z);
 
     int get_max_rotation(int *rotation);
+
+    void print_rotated_block(int rotation);
 };
 
 #endif

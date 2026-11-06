@@ -3,9 +3,10 @@
 #include <vector>
 #include <algorithm>
 
-typedef struct
+typedef struct placement
 {
-    Block *prev;
+    struct placement *prev;
+    Block *b;
     int height;
     int rotation;
     int n_blocks;
@@ -31,19 +32,20 @@ int main()
         int rotation;
 
         // A torre pode começar apenas com este bloco.
-        dp[i] = {nullptr, b.get_max_rotation(&rotation), rotation, 1};
+        dp[i] = {nullptr, &b, b.get_max_rotation(&rotation), rotation, 1};
 
         for (size_t k = 0; k < i; k++)
         {
             int current_rotation = 0;
+            int new_height;
 
-            if (b.is_placable(blocks[k], &current_rotation))
+            if (b.is_placable(blocks[k], &current_rotation, &new_height))
             {
-                int new_height = dp[k].height + b.get_z();
+                new_height += dp[k].height;
 
                 if (new_height > dp[i].height)
                 {
-                    dp[i] = {&blocks[k], new_height, current_rotation, dp[k].n_blocks + 1};
+                    dp[i] = {&dp[k], &blocks[i], new_height, current_rotation, dp[k].n_blocks + 1};
                 }
             }
         }
@@ -58,6 +60,20 @@ int main()
         });
 
     std::cout << max->height << " " << max->n_blocks << std::endl;
+
+    max->b->print_rotated_block(max->rotation);
+
+    Placement *p = max->prev;
+
+    while (true)
+    {
+        if (p == nullptr)
+            break;
+
+        p->b->print_rotated_block(p->rotation);
+
+        p = p->prev;
+    }
 
     return 0;
 }

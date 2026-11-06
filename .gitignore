@@ -1,6 +1,9 @@
 # Prerequisites
 *.d
 
+# Testes do Projeto
+*.txt
+
 # Enunciado do Projeto
 *.pdf
 

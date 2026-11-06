@@ -35,16 +35,40 @@ int Block::get_max_rotation(int *rotaion)
     return max_z;
 }
 
-bool Block::is_placable(const Block &b, int *rotation)
+bool Block::is_placable(const Block &b, int *rotation, int *new_z)
 {
     for (int i = 0; i < 3; i++)
     {
         if (b.x > x && b.y > y)
+        {
+            (*new_z) = z;
             return true;
+        }
 
         rotate();
         (*rotation)++;
     }
     (*rotation) = 0;
     return false;
+}
+
+void Block::print_rotated_block(int rotation)
+{
+    switch (rotation)
+    {
+    case 0:
+        std::cout << x << ' ' << y << ' ' << z << std::endl;
+        break;
+
+    case 1:
+        std::cout << y << ' ' << z << ' ' << x << std::endl;
+        break;
+
+    case 3:
+        std::cout << z << ' ' << x << ' ' << y << std::endl;
+        break;
+
+    default:
+        break;
+    }
 }
