@@ -28,8 +28,10 @@ int main()
         blocks.emplace_back(s_x, s_y, s_z);
         Block &b = blocks.back();
 
+        int rotation;
+
         // A torre pode começar apenas com este bloco.
-        dp[i] = {nullptr, b.get_z(), b.get_max_rotation(), 1};
+        dp[i] = {nullptr, b.get_max_rotation(&rotation), rotation, 1};
 
         for (size_t k = 0; k < i; k++)
         {
@@ -56,5 +58,6 @@ int main()
         });
 
     std::cout << max->height << " " << max->n_blocks << std::endl;
+
     return 0;
 }

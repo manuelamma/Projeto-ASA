@@ -18,21 +18,21 @@ void Block::rotate()
     y = tmp_x;
 }
 
-int Block::get_max_rotation()
+int Block::get_max_rotation(int *rotaion)
 {
-    int max_rotation = 0, max_z = -1;
+    int max_z = -1;
 
     for (int i = 0; i < 3; i++)
     {
         if (z > max_z)
         {
             max_z = z;
-            max_rotation = i;
+            (*rotaion) = i;
         }
 
         rotate();
     }
-    return max_rotation;
+    return max_z;
 }
 
 bool Block::is_placable(const Block &b, int *rotation)

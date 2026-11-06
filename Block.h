@@ -19,7 +19,7 @@ public:
 
     bool is_placable(const Block &b, int *rotation);
 
-    int get_max_rotation();
+    int get_max_rotation(int *rotation);
 };
 
 #endif
