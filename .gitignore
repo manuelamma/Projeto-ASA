@@ -1,6 +1,9 @@
 # Prerequisites
 *.d
 
+# Enunciado do Projeto
+*.pdf
+
 # Compiled Object files
 *.slo
 *.lo
