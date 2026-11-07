@@ -41,7 +41,7 @@ int main()
     }
 
     // Ordena por a decrescente e, em caso de empate, por b crescente.
-    // Evita empilhar blocos com a mesma dimensão a.
+    // Evita empilhar blocos com a mesma dimensão a. 
     std::sort(orients.begin(), orients.end(),
     [](const Orient &x, const Orient &y) {
         if (x.a != y.a) return x.a > y.a;
