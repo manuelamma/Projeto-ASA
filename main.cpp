@@ -1,51 +1,76 @@
-#include "Block.h"
-#include <iostream>
+#include <cstdio>
 #include <vector>
 #include <algorithm>
+
+// Orientação de um tipo de bloco: base a x b (com a <= b) e altura h.
+typedef struct orient
+{
+    int a, b, h;
+} Orient;
 
 typedef struct placement
 {
     struct placement *prev;
-    Block *b;
+    Orient *o;
     int height;
-    int rotation;
     int n_blocks;
 } Placement;
 
 int main()
 {
-    size_t n_blocks;
-    std::cin >> n_blocks;
-    std::vector<Block> blocks;
-    blocks.reserve(n_blocks);
-    std::string s_x, s_y, s_z;
+    int n_blocks;
+    if (scanf("%d", &n_blocks) != 1)
+        return 0;
 
-    std::vector<Placement> dp(n_blocks);
+    std::vector<Orient> orients;
+    orients.reserve(3 * (size_t)n_blocks);
 
-    for (size_t i = 0; i < n_blocks; i++)
+    for (int i = 0; i < n_blocks; i++)
     {
-        std::cin >> s_x >> s_y >> s_z;
+        int d[3];
+        if (scanf("%d %d %d", &d[0], &d[1], &d[2]) != 3)
+            return 0;
 
-        blocks.emplace_back(s_x, s_y, s_z);
-        Block &b = blocks.back();
+        std::sort(d, d + 3);
 
-        int rotation;
+        // Basta guardar a base ordenada (a <= b): se uma base cabe sobre outra
+        // nalguma rotação, também cabe com ambas as bases ordenadas.
+        orients.push_back({d[1], d[2], d[0]});
+        orients.push_back({d[0], d[2], d[1]});
+        orients.push_back({d[0], d[1], d[2]});
+    }
 
-        // A torre pode começar apenas com este bloco.
-        dp[i] = {nullptr, &b, b.get_max_rotation(&rotation), rotation, 1};
+    // Ordenar por a decrescente: qualquer orientação que possa ficar por baixo
+    // de outra tem a estritamente maior, logo aparece antes no vetor.
+    std::sort(
+        orients.begin(),
+        orients.end(),
+        [](const Orient &x, const Orient &y)
+        {
+            return x.a > y.a;
+        });
+
+    size_t n_orients = orients.size();
+    std::vector<Placement> dp(n_orients);
+
+    for (size_t i = 0; i < n_orients; i++)
+    {
+        Orient &o = orients[i];
+
+        // A torre pode começar apenas com esta orientação.
+        dp[i] = {nullptr, &o, o.h, 1};
 
         for (size_t k = 0; k < i; k++)
         {
-            int current_rotation = 0;
-            int new_height;
+            const Orient &below = orients[k];
 
-            if (b.is_placable(blocks[k], &current_rotation, &new_height))
+            if (o.a < below.a && o.b < below.b)
             {
-                new_height += dp[k].height;
+                int new_height = dp[k].height + o.h;
 
                 if (new_height > dp[i].height)
                 {
-                    dp[i] = {&dp[k], &blocks[i], new_height, current_rotation, dp[k].n_blocks + 1};
+                    dp[i] = {&dp[k], &o, new_height, dp[k].n_blocks + 1};
                 }
             }
         }
@@ -59,18 +84,13 @@ int main()
             return a.height < b.height;
         });
 
-    std::cout << max->height << " " << max->n_blocks << std::endl;
+    printf("%d %d\n", max->height, max->n_blocks);
 
-    max->b->print_rotated_block(max->rotation);
+    Placement *p = &*max;
 
-    Placement *p = max->prev;
-
-    while (true)
+    while (p != nullptr)
     {
-        if (p == nullptr)
-            break;
-
-        p->b->print_rotated_block(p->rotation);
+        printf("%d %d %d\n", p->o->a, p->o->b, p->o->h);
 
         p = p->prev;
     }
