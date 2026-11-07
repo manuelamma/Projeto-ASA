@@ -40,40 +40,38 @@ int main()
         orients.push_back({d[0], d[1], d[2]});
     }
 
-    // Ordenar por a decrescente: qualquer orientação que possa ficar por baixo
-    // de outra tem a estritamente maior, logo aparece antes no vetor.
-    std::sort(
-        orients.begin(),
-        orients.end(),
-        [](const Orient &x, const Orient &y)
-        {
-            return x.a > y.a;
-        });
+    // Ordena por a decrescente e, em caso de empate, por b crescente.
+    // Evita empilhar blocos com a mesma dimensão a.
+    std::sort(orients.begin(), orients.end(),
+    [](const Orient &x, const Orient &y) {
+        if (x.a != y.a) return x.a > y.a;
+        return x.b < y.b;
+    });
 
     size_t n_orients = orients.size();
     std::vector<Placement> dp(n_orients);
+
+    std::vector<int> values;
+    for (auto &o : orients) values.push_back(o.b);
+    std::sort(values.begin(), values.end(), std::greater<int>());
+    values.erase(std::unique(values.begin(), values.end()), values.end());
+    // Guarda os índices das melhores soluções de programação dinâmica.
+    std::vector<int> bit(values.size() + 1, -1);
 
     for (size_t i = 0; i < n_orients; i++)
     {
         Orient &o = orients[i];
 
-        // A torre pode começar apenas com esta orientação.
-        dp[i] = {nullptr, &o, o.h, 1};
-
-        for (size_t k = 0; k < i; k++)
-        {
-            const Orient &below = orients[k];
-
-            if (o.a < below.a && o.b < below.b)
-            {
-                int new_height = dp[k].height + o.h;
-
-                if (new_height > dp[i].height)
-                {
-                    dp[i] = {&dp[k], &o, new_height, dp[k].n_blocks + 1};
-                }
-            }
-        }
+        int pos = std::lower_bound(values.begin(), values.end(), o.b, std::greater<int>()) - values.begin() + 1;
+        // Procura a melhor torre com ambas as dimensões da base maiores.
+        int best = -1;
+        for (int j = pos - 1; j > 0; j -= j & -j)
+            if (bit[j] != -1 && (best == -1 || dp[bit[j]].height > dp[best].height))
+                best = bit[j];
+        // Calcula a altura máxima da torre terminada na orientação atual.
+        dp[i] = {best == -1 ? nullptr : &dp[best], &o, o.h + (best == -1 ? 0 : dp[best].height), 1 + (best == -1 ? 0 : dp[best].n_blocks)};
+        for (int j = pos; j < (int)bit.size(); j += j & -j)
+            if (bit[j] == -1 || dp[i].height > dp[bit[j]].height) bit[j] = (int)i;
     }
 
     auto max = std::max_element(
@@ -95,6 +93,5 @@ int main()
 
     for (auto it = tower.rbegin(); it != tower.rend(); ++it)
         printf("%d %d %d\n", (*it)->a, (*it)->b, (*it)->h);
-
     return 0;
 }
