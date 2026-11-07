@@ -7,6 +7,13 @@
 # Enunciado do Projeto
 *.pdf
 
+# Binários do Projeto
+main
+
+# Testes do professor
+gerador.cpp
+gerador
+
 # Compiled Object files
 *.slo
 *.lo
