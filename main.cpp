@@ -86,14 +86,15 @@ int main()
 
     printf("%d %d\n", max->height, max->n_blocks);
 
-    Placement *p = &*max;
+    // Seguir prev percorre a torre do topo para a base; guardar e imprimir ao contrário.
+    std::vector<Orient *> tower;
+    tower.reserve(max->n_blocks);
 
-    while (p != nullptr)
-    {
-        printf("%d %d %d\n", p->o->a, p->o->b, p->o->h);
+    for (Placement *p = &*max; p != nullptr; p = p->prev)
+        tower.push_back(p->o);
 
-        p = p->prev;
-    }
+    for (auto it = tower.rbegin(); it != tower.rend(); ++it)
+        printf("%d %d %d\n", (*it)->a, (*it)->b, (*it)->h);
 
     return 0;
 }
