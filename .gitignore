@@ -10,6 +10,9 @@
 # Binários do Projeto
 main
 
+# Ficheiro do Relatório
+retatorio.txt
+
 # Testes do professor
 gerador.cpp
 gerador

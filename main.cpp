@@ -1,14 +1,22 @@
+/*
+ * Projeto ASA 26/27 - Grupo AL048
+ * Manuel André (ist1118928) e Bruno Santos (ist1118057)
+ *
+ * Torre de altura máxima com programação dinâmica e Fenwick Tree, O(N log N).
+ */
+
 #include <cstdio>
 #include <vector>
 #include <algorithm>
 #include <functional>
 
-// Orientação de um tipo de bloco: base a x b (com a <= b) e altura h.
+// Orientação de um bloco: base a x b (a <= b) e altura h.
 typedef struct orient
 {
     int a, b, h;
 } Orient;
 
+// Melhor torre com a orientação o no topo; prev é o bloco de baixo.
 typedef struct placement
 {
     struct placement *prev;
@@ -34,15 +42,13 @@ int main()
 
         std::sort(d, d + 3);
 
-        // Basta guardar a base ordenada (a <= b): se uma base cabe sobre outra
-        // nalguma rotação, também cabe com ambas as bases ordenadas.
+        // Uma orientação por cada dimensão usada como altura.
         orients.push_back({d[1], d[2], d[0]});
         orients.push_back({d[0], d[2], d[1]});
         orients.push_back({d[0], d[1], d[2]});
     }
 
-    // Ordena por a decrescente e, em caso de empate, por b crescente.
-    // Evita empilhar blocos com a mesma dimensão a.
+    // a decrescente; nos empates, b crescente (impede empilhar blocos com o mesmo a).
     std::sort(orients.begin(), orients.end(),
               [](const Orient &x, const Orient &y)
               {
@@ -54,7 +60,7 @@ int main()
     size_t n_orients = orients.size();
     std::vector<Placement> dp(n_orients);
 
-    // Compressão de b por ordem decrescente: posições menores na BIT têm b maior.
+    // Valores distintos de b, por ordem decrescente.
     std::vector<int> values;
     values.reserve(n_orients);
 
@@ -64,16 +70,17 @@ int main()
     std::sort(values.begin(), values.end(), std::greater<int>());
     values.erase(std::unique(values.begin(), values.end()), values.end());
 
-    // Fenwick tree de máximos: guarda o índice em dp da torre mais alta, ou -1.
+    // Fenwick Tree: índice da torre mais alta em dp, ou -1.
     std::vector<int> bit(values.size() + 1, -1);
 
     for (size_t i = 0; i < n_orients; i++)
     {
         Orient &o = orients[i];
 
+        // Posições anteriores a pos têm b maior.
         int pos = std::lower_bound(values.begin(), values.end(), o.b, std::greater<int>()) - values.begin() + 1;
 
-        // Melhor torre já calculada com b estritamente maior.
+        // Torre mais alta onde o bloco cabe.
         int best = -1;
 
         for (int j = pos - 1; j > 0; j -= j & -j)
@@ -87,6 +94,7 @@ int main()
         else
             dp[i] = {&dp[best], &o, dp[best].height + o.h, dp[best].n_blocks + 1};
 
+        // Regista a nova torre na Fenwick Tree.
         for (int j = pos; j < (int)bit.size(); j += j & -j)
         {
             if (bit[j] == -1 || dp[i].height > dp[bit[j]].height)
@@ -102,7 +110,7 @@ int main()
 
     printf("%d %d\n", max->height, max->n_blocks);
 
-    // Seguir prev percorre a torre do topo para a base; guardar e imprimir ao contrário.
+    // prev vai do topo para a base, por isso imprime-se ao contrário.
     std::vector<Orient *> tower;
     tower.reserve(max->n_blocks);
 
